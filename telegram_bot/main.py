@@ -268,10 +268,45 @@ class AnalyticsLogger:
             logger.error(f"Error getting daily stats: {e}")
             return {}
 
+class ComplimentLoader:
+    """Handles loading and managing compliments from JSON file"""
+    
+    def __init__(self, compliments_file: str = "telegram_bot/compliments.json"):
+        self.compliments_file = compliments_file
+        self.compliments = []
+        self.load_compliments()
+    
+    def load_compliments(self):
+        """Load compliments from JSON file"""
+        try:
+            if os.path.exists(self.compliments_file):
+                with open(self.compliments_file, 'r', encoding='utf-8') as f:
+                    self.compliments = json.load(f)
+                logger.info(f"Loaded {len(self.compliments)} compliments from {self.compliments_file}")
+            else:
+                logger.warning(f"Compliments file not found: {self.compliments_file}")
+                # Fallback to a few basic compliments
+                self.compliments = [
+                    "You have an incredible ability to make others feel valued and appreciated.",
+                    "Your kindness radiates warmth that brightens everyone's day.",
+                    "The way you listen with such genuine care is truly a gift."
+                ]
+        except Exception as e:
+            logger.error(f"Error loading compliments: {e}")
+            self.compliments = ["You are amazing and worthy of love and kindness! 💖"]
+    
+    def get_random_compliment(self) -> str:
+        """Get a random compliment"""
+        import random
+        if self.compliments:
+            return random.choice(self.compliments)
+        return "You are wonderful just as you are! 🌟"
+
 class KindWordsBot:
     def __init__(self):
         self.user_sessions = {}  # Store user session data
         self.analytics = AnalyticsLogger()  # Initialize analytics logger
+        self.compliments = ComplimentLoader()  # Initialize compliment loader
     
     def _get_user_data(self, user) -> Dict[str, Any]:
         """Extract user data for logging"""
@@ -295,11 +330,13 @@ class KindWordsBot:
             "I'm here to help you create beautiful, AI-generated messages "
             "that spread kindness and joy. ✨\n\n"
             "Use /create to start crafting a personalized message for someone special!\n"
+            "Use /compliment to receive a gentle compliment for yourself!\n"
             "Use /help to see all available commands."
         )
         
         keyboard = [
             [InlineKeyboardButton("✨ Create Message", callback_data='create_message')],
+            [InlineKeyboardButton("💝 Get Compliment", callback_data='get_compliment')],
             [InlineKeyboardButton("❓ Help", callback_data='help')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -315,6 +352,7 @@ class KindWordsBot:
             "🌟 *KindWords Bot Commands* 🌟\n\n"
             "/start - Welcome message and get started\n"
             "/create - Create a new kind message\n"
+            "/compliment - Receive a gentle compliment\n"
             "/help - Show this help message\n"
             "/about - Learn more about KindWords\n"
             "/stats - View your usage statistics\n\n"
@@ -344,6 +382,28 @@ class KindWordsBot:
             "Made with ❤️ for spreading kindness"
         )
         await update.message.reply_text(about_text, parse_mode='Markdown')
+    
+    async def compliment_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle the /compliment command - send a random compliment"""
+        user = update.effective_user
+        user_data = self._get_user_data(user)
+        self.analytics.log_interaction(user_data, 'compliment_command')
+        
+        compliment = self.compliments.get_random_compliment()
+        
+        compliment_message = (
+            f"💝 *A gentle compliment for you, {user.first_name}:*\n\n"
+            f"_{compliment}_\n\n"
+            "🌸 Remember: You are worthy of love and kindness! 🌸"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🔄 Another Compliment", callback_data='get_compliment')],
+            [InlineKeyboardButton("✨ Create Message for Someone", callback_data='create_message')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(compliment_message, reply_markup=reply_markup, parse_mode='Markdown')
     
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle the /stats command - show user their usage statistics"""
@@ -494,6 +554,9 @@ class KindWordsBot:
         if data == 'create_message':
             await self.create_command(update, context)
         
+        elif data == 'get_compliment':
+            await self.send_compliment_callback(update, context)
+        
         elif data == 'help':
             await self.help_command(update, context)
         
@@ -502,6 +565,30 @@ class KindWordsBot:
         
         elif data == 'regenerate':
             await self.regenerate_message(update, context)
+    
+    async def send_compliment_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Send a compliment via callback query"""
+        query = update.callback_query
+        user = query.from_user
+        user_data = self._get_user_data(user)
+        
+        self.analytics.log_interaction(user_data, 'compliment_callback')
+        
+        compliment = self.compliments.get_random_compliment()
+        
+        compliment_message = (
+            f"💝 *A gentle compliment for you, {user.first_name}:*\n\n"
+            f"_{compliment}_\n\n"
+            "🌸 Remember: You are worthy of love and kindness! 🌸"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🔄 Another Compliment", callback_data='get_compliment')],
+            [InlineKeyboardButton("✨ Create Message for Someone", callback_data='create_message')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(compliment_message, reply_markup=reply_markup, parse_mode='Markdown')
     
     async def handle_mood_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle mood theme selection"""
@@ -664,6 +751,7 @@ def main() -> None:
     application.add_handler(CommandHandler("about", bot.about_command))
     application.add_handler(CommandHandler("stats", bot.stats_command))
     application.add_handler(CommandHandler("create", bot.create_command))
+    application.add_handler(CommandHandler("compliment", bot.compliment_command))
     application.add_handler(CallbackQueryHandler(bot.handle_callback))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))
     
