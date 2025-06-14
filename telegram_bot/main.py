@@ -3,6 +3,8 @@
 KindWords Telegram Bot
 A bot that generates AI-powered kind messages and compliments
 """
+from keep_alive import keep_alive
+keep_alive()
 
 import os
 import logging

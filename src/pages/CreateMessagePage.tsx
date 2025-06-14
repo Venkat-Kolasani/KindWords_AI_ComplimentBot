@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Sparkles, Send, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Sparkles, Send, AlertCircle, MessageCircle, ExternalLink } from 'lucide-react';
 import { generateCompliment } from '../utils/complimentGenerator';
 import type { MessageData } from '../App';
 
@@ -50,23 +50,64 @@ export function CreateMessagePage({ onBack }: CreateMessagePageProps) {
     setShowSchedule(false);
   };
 
+  const openTelegramBot = () => {
+    window.open('https://t.me/AI_KindWords_bot', '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-purple-100">
       {/* Header */}
       <header className="px-6 py-6 border-b border-amber-200/50 bg-white/60 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex items-center space-x-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={onBack}
+              className="p-3 hover:bg-amber-100/50 rounded-xl transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-amber-700" />
+            </button>
+            <h1 className="text-2xl font-semibold text-amber-900">Create Your Gentle Message</h1>
+          </div>
+          
           <button 
-            onClick={onBack}
-            className="p-3 hover:bg-amber-100/50 rounded-xl transition-colors"
+            onClick={openTelegramBot}
+            className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 text-sm"
           >
-            <ArrowLeft className="w-6 h-6 text-amber-700" />
+            <MessageCircle className="w-4 h-4" />
+            <span>Try Telegram Bot</span>
+            <ExternalLink className="w-3 h-3" />
           </button>
-          <h1 className="text-2xl font-semibold text-amber-900">Create Your Gentle Message</h1>
         </div>
       </header>
 
       <main className="px-6 py-16">
         <div className="max-w-3xl mx-auto space-y-10">
+          {/* Telegram Bot Suggestion */}
+          <div className="bg-gradient-to-r from-blue-50/80 to-cyan-50/80 backdrop-blur-md rounded-2xl p-6 border border-blue-200/50 shadow-lg">
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  💡 Try Our Telegram Bot for Instant Kindness!
+                </h3>
+                <p className="text-blue-700/80 text-sm mb-4 leading-relaxed">
+                  Get personal compliments, create messages on-the-go, and access all mood themes directly in Telegram. 
+                  Perfect for quick bursts of kindness throughout your day!
+                </p>
+                <button 
+                  onClick={openTelegramBot}
+                  className="bg-gradient-to-r from-blue-400 to-cyan-500 text-white px-4 py-2 rounded-lg hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center space-x-2 text-sm"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Open @AI_KindWords_bot</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Friend's Name */}
           <div className="bg-white/60 backdrop-blur-md rounded-2xl p-8 border border-amber-200/50 shadow-lg">
             <label className="block text-lg font-medium text-amber-900 mb-4">
@@ -223,6 +264,27 @@ export function CreateMessagePage({ onBack }: CreateMessagePageProps) {
               )}
             </div>
           )}
+
+          {/* Alternative Platform Suggestion */}
+          <div className="bg-gradient-to-r from-blue-50/60 to-cyan-50/60 backdrop-blur-md rounded-2xl p-6 border border-blue-200/50 shadow-lg">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                🚀 Want Even Faster Kindness?
+              </h3>
+              <p className="text-blue-700/80 text-sm mb-4 leading-relaxed">
+                Our Telegram bot offers instant compliments, quick message creation, and all the same AI-powered features - 
+                perfect for spreading kindness on-the-go!
+              </p>
+              <button 
+                onClick={openTelegramBot}
+                className="bg-gradient-to-r from-blue-400 to-cyan-500 text-white px-6 py-3 rounded-xl hover:from-blue-500 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 mx-auto"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>Try Telegram Bot</span>
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
